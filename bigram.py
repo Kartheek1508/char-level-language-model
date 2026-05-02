@@ -18,7 +18,7 @@ for w in words:
 
 print(N[0])
 
-P = N.float()
+P = (N+1).float()
 P = P/P.sum(1,keepdim = True)
 print(P[0])
 
