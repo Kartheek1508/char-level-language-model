@@ -15,7 +15,7 @@ def build_dataset(words):
     X,Y = [],[]
     for w in words:
         context = [0]*block_size
-        for ch in w:
+        for ch in w+'.':
             ix = stoi[ch]
             X.append(context)
             Y.append(ix)
@@ -76,3 +76,29 @@ h = torch.tanh(emb.view(-1, 30) @ W1 + b1)
 logits = h @ W2 + b2
 val_loss = F.cross_entropy(logits, Y_val)
 print(f"Validation loss  = {val_loss}")
+
+g = torch.Generator().manual_seed(2147483647 + 10)
+
+for _ in range(20):
+    
+    out = []
+    context = [0] * block_size 
+    while True:
+      emb = C[torch.tensor([context])]
+      h = torch.tanh(emb.view(1, -1) @ W1 + b1)
+      logits = h @ W2 + b2
+      probs = F.softmax(logits, dim=1)
+      ix = torch.multinomial(probs, num_samples=1, generator=g).item()
+      context = context[1:] + [ix]
+      out.append(ix)
+      if ix == 0:
+        break
+    
+    print(''.join(itos[i] for i in out))
+
+
+emb = C[X_test]
+h = torch.tanh(emb.view(-1, 30) @ W1 + b1)
+logits = h @ W2 + b2
+test_loss = F.cross_entropy(logits, Y_test)
+print(f"Test loss  = {test_loss}")
